@@ -11,7 +11,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.embulk.config.CommitReport;
+import org.embulk.config.TaskReport;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
@@ -83,7 +83,7 @@ public class ParquetOutputPlugin
 
     public void cleanup(TaskSource taskSource,
             Schema schema, int processorCount,
-            List<CommitReport> successCommitReports)
+            List<TaskReport> successTaskReports)
     {
         //TODO
     }
@@ -191,8 +191,8 @@ public class ParquetOutputPlugin
         }
 
         @Override
-        public CommitReport commit() {
-            return Exec.newCommitReport();
+        public TaskReport commit() {
+            return Exec.newTaskReport();
             //TODO
         }
     }
