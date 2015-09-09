@@ -18,8 +18,8 @@ configurations {
 version = "0.1.0"
 
 dependencies {
-    compile  "org.embulk:embulk-core:0.4.2"
-    provided "org.embulk:embulk-core:0.4.2"
+    compile  "org.embulk:embulk-core:0.7.4"
+    provided "org.embulk:embulk-core:0.7.4"
 
     compile "com.twitter:parquet-hadoop:1.5.0"
     compile "org.apache.hadoop:hadoop-client:2.6.0"
