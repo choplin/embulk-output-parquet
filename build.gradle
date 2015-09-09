@@ -41,6 +41,11 @@ task gem(type: JRubyExec, dependsOn: ["build", "gemspec", "classpath"]) {
     doLast { ant.move(file: "${project.name}-${project.version}.gem", todir: "pkg") }
 }
 
+task gemPush(type: JRubyExec, dependsOn: ["gem"]) {
+    jrubyArgs "-rrubygems/gem_runner", "-eGem::GemRunner.new.run(ARGV)", "push"
+    script "pkg/${project.name}-${project.version}.gem"
+}
+
 task gemspec << { file("build/gemspec").write($/
 Gem::Specification.new do |spec|
   spec.name          = "${project.name}"
