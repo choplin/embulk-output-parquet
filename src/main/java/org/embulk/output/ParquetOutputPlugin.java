@@ -36,27 +36,27 @@ public class ParquetOutputPlugin
             extends Task, TimestampFormatter.Task
     {
         @Config("path_prefix")
-        public String getPathPrefix();
+        String getPathPrefix();
 
         @Config("file_ext")
         @ConfigDefault("\".parquet\"")
-        public String getFileNameExtension();
+        String getFileNameExtension();
 
         @Config("sequence_format")
         @ConfigDefault("\".%03d\"")
-        public String getSequenceFormat();
+        String getSequenceFormat();
 
         @Config("block_size")
         @ConfigDefault("134217728") // 128M
-        public int getBlockSize();
+        int getBlockSize();
 
         @Config("page_size")
         @ConfigDefault("1048576") // 1M
-        public int getPageSize();
+        int getPageSize();
 
         @Config("compression_codec")
         @ConfigDefault("\"UNCOMPRESSED\"")
-        public String getCompressionCodec();
+        String getCompressionCodec();
 
         @Config("column_options")
         @ConfigDefault("{}")
