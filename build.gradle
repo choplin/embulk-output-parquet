@@ -15,15 +15,16 @@ configurations {
     provided
 }
 
-version = "0.2.0"
+version = "0.2.1"
 
 dependencies {
-    compile  "org.embulk:embulk-core:0.7.4"
-    provided "org.embulk:embulk-core:0.7.4"
+    compile  "org.embulk:embulk-core:0.7.10"
+    provided "org.embulk:embulk-core:0.7.10"
 
     compile "com.twitter:parquet-hadoop:1.5.0"
     compile "org.apache.hadoop:hadoop-client:2.6.0"
     compile "org.xerial.snappy:snappy-java:1.1.1.6"
+    compile "org.apache.hadoop:hadoop-aws:2.6.0"
 
     testCompile "junit:junit:4.+"
 }
