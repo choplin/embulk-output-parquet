@@ -1,6 +1,5 @@
 # Parquet output plugin for Embulk
 
-
 ## Overview
 
 * **Plugin type**: output
@@ -16,7 +15,10 @@
 - **block_size**: A block size of parquet file. (int, default: 134217728(128M))
 - **page_size**: A page size of parquet file. (int, default: 1048576(1M))
 - **compression_codec**: A compression codec. available: UNCOMPRESSED, SNAPPY, GZIP (string, default: UNCOMPRESSED)
-- **timezone**: A timezone for timestamp format. (string, default: UTC)
+- **default_timezone**: Time zone of timestamp columns. This can be overwritten for each column using column_options
+- **default_timestamp_format**: Format of timestamp columns. This can be overwritten for each column using column_options
+- **column_options**: Specify timezone and timestamp format for each column. Format of this option is the same as the official csv formatter. See [document](
+http://www.embulk.org/docs/built-in.html#csv-formatter-plugin).
 
 ## Example
 

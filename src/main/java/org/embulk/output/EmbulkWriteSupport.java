@@ -24,9 +24,9 @@ public class EmbulkWriteSupport extends WriteSupport<PageReader> {
     final Schema schema;
     RecordConsumer consumer;
     WriteContext writeContext;
-    Map<Integer, TimestampFormatter> timestampFormatters;
+    TimestampFormatter[] timestampFormatters;
 
-    public EmbulkWriteSupport(Schema schema, Map<Integer, TimestampFormatter> timestampFormatters) {
+    public EmbulkWriteSupport(Schema schema, TimestampFormatter[] timestampFormatters) {
         this.schema = schema;
         this.timestampFormatters = timestampFormatters;
     }
@@ -112,7 +112,7 @@ public class EmbulkWriteSupport extends WriteSupport<PageReader> {
         public void timestampColumn(Column column) {
             if (!record.isNull(column)) {
                 Timestamp t = record.getTimestamp(column);
-                String formatted = timestampFormatters.get(column.getIndex()).format(t);
+                String formatted = timestampFormatters[column.getIndex()].format(t);
                 consumer.addBinary(Binary.fromString(formatted));
             }
         }
