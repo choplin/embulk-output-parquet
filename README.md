@@ -19,13 +19,17 @@
 - **default_timestamp_format**: Format of timestamp columns. This can be overwritten for each column using column_options
 - **column_options**: Specify timezone and timestamp format for each column. Format of this option is the same as the official csv formatter. See [document](
 http://www.embulk.org/docs/built-in.html#csv-formatter-plugin).
+- **extra_configurations**: Add extra entries to Configuration which will be passed to ParquetWriter
 
 ## Example
 
 ```yaml
 out:
   type: parquet
-  path_prefix: file:///data/output
+  path_prefix: s3a://bucket/keys
+  extra_configuration:
+    fs.s3a.awsAccessKeyId:  your_access_key
+    fs.s3a.awsSecretAccessKey: your_secret_access_key
 ```
 
 ## Build

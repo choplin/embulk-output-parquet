@@ -61,6 +61,10 @@ public class ParquetOutputPlugin
         @Config("column_options")
         @ConfigDefault("{}")
         Map<String, TimestampColumnOption> getColumnOptions();
+
+        @Config("extra_configurations")
+        @ConfigDefault("{}")
+        Map<String, String> getExtraConfigurations();
     }
 
     public interface TimestampColumnOption
@@ -110,18 +114,15 @@ public class ParquetOutputPlugin
 
         final TimestampFormatter[] timestampFormatters = Timestamps.newTimestampColumnFormatters(task, schema, task.getColumnOptions());
         final EmbulkWriteSupport writeSupport = new EmbulkWriteSupport(schema, timestampFormatters);
-        ParquetWriter<PageReader> writer = createParquetWriter(new Path(path), writeSupport, codec, blockSize, pageSize);
+        final Configuration conf = createConfiguration(task.getExtraConfigurations());
+
+        ParquetWriter<PageReader> writer = createParquetWriter(new Path(path), writeSupport, codec, blockSize, pageSize, conf);
 
         return new ParquetTransactionalPageOutput(reader, writer);
     }
 
-    private <T> ParquetWriter<T> createParquetWriter(Path path, WriteSupport<T> writeSupport, CompressionCodecName codec, int blockSize, int pageSize) {
+    private <T> ParquetWriter<T> createParquetWriter(Path path, WriteSupport<T> writeSupport, CompressionCodecName codec, int blockSize, int pageSize, Configuration conf) {
         ParquetWriter<T> writer = null;
-
-        Configuration conf = new Configuration();
-        conf.set("fs.hdfs.impl", DistributedFileSystem.class.getName());
-        conf.set("fs.file.impl", LocalFileSystem.class.getName());
-        conf.setClassLoader(this.getClass().getClassLoader());
 
         try {
             writer = new ParquetWriter<>(
@@ -139,6 +140,23 @@ public class ParquetOutputPlugin
             Throwables.propagate(e);
         }
         return writer;
+    }
+
+    private Configuration createConfiguration(Map<String,String> extra) {
+        Configuration conf = new Configuration();
+
+        // Default values
+        conf.set("fs.hdfs.impl", DistributedFileSystem.class.getName());
+        conf.set("fs.file.impl", LocalFileSystem.class.getName());
+
+        // Optional values
+        for (Map.Entry<String, String> entry : extra.entrySet()) {
+            conf.set(entry.getKey(), entry.getValue());
+        }
+
+        conf.setClassLoader(this.getClass().getClassLoader());
+
+        return conf;
     }
 
     class ParquetTransactionalPageOutput implements TransactionalPageOutput {

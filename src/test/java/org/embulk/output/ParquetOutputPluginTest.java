@@ -1,11 +1,17 @@
 package org.embulk.output;
 
+import org.apache.hadoop.conf.Configuration;
 import org.embulk.EmbulkTestRuntime;
 import org.embulk.config.ConfigException;
 import org.embulk.config.ConfigSource;
 import org.embulk.spi.Exec;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -33,5 +39,25 @@ public class ParquetOutputPluginTest {
         config.loadConfig(ParquetOutputPlugin.PluginTask.class);
     }
 
+    @Test
+    public void checkExtraConfigurations() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        ConfigSource map = Exec.newConfigSource()
+                .set("foo", "bar");
 
+        ConfigSource config = Exec.newConfigSource()
+                .set("path_prefix", "test")
+                .setNested("extra_configurations", map);
+
+        ParquetOutputPlugin.PluginTask task = config.loadConfig(ParquetOutputPlugin.PluginTask.class);
+
+        Map<String, String> extra = task.getExtraConfigurations();
+        assertTrue(extra.containsKey("foo"));
+        assertEquals("bar", extra.get("foo"));
+
+        ParquetOutputPlugin plugin = new ParquetOutputPlugin();
+        Method method = ParquetOutputPlugin.class.getDeclaredMethod("createConfiguration", Map.class);
+        method.setAccessible(true);
+        Configuration conf = (Configuration) method.invoke(plugin, extra);
+        assertEquals("bar", conf.get("foo"));
+    }
 }
