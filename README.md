@@ -20,6 +20,7 @@
 - **column_options**: Specify timezone and timestamp format for each column. Format of this option is the same as the official csv formatter. See [document](
 http://www.embulk.org/docs/built-in.html#csv-formatter-plugin).
 - **extra_configurations**: Add extra entries to Configuration which will be passed to ParquetWriter
+- **overwrite**: Overwrite if output files already exist. (default: fail if files exist)
 
 ## Example
 

@@ -30,6 +30,7 @@ public class ParquetOutputPluginTest {
         assertEquals(134217728, task.getBlockSize());
         assertEquals(1048576, task.getPageSize());
         assertEquals("UNCOMPRESSED", task.getCompressionCodec());
+        assertFalse(task.getOverwrite());
     }
 
     @Test(expected = ConfigException.class)

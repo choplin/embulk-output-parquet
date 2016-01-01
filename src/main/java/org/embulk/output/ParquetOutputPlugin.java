@@ -5,6 +5,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.embulk.config.Config;
@@ -64,6 +65,10 @@ public class ParquetOutputPlugin
         @Config("extra_configurations")
         @ConfigDefault("{}")
         Map<String, String> getExtraConfigurations();
+
+        @Config("overwrite")
+        @ConfigDefault("false")
+        boolean getOverwrite();
     }
 
     public interface TimestampColumnOption
@@ -117,16 +122,22 @@ public class ParquetOutputPlugin
         final int blockSize = task.getBlockSize();
         final int pageSize = task.getPageSize();
         final Configuration conf = createConfiguration(task.getExtraConfigurations());
+        final boolean overwrite = task.getOverwrite();
 
         ParquetWriter<PageReader> writer = null;
         try {
-            writer = new EmbulkWriterBuilder(path, schema, timestampFormatters)
+            EmbulkWriterBuilder builder = new EmbulkWriterBuilder(path, schema, timestampFormatters)
                     .withCompressionCodec(codec)
                     .withRowGroupSize(blockSize)
                     .withPageSize(pageSize)
                     .withDictionaryPageSize(pageSize)
-                    .withConf(conf)
-                    .build();
+                    .withConf(conf);
+
+            if (overwrite) {
+                builder.withWriteMode(ParquetFileWriter.Mode.OVERWRITE);
+            }
+
+            writer = builder.build();
         } catch (IOException e) {
             Throwables.propagate(e);
         }
