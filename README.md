@@ -28,8 +28,9 @@ out:
   type: parquet
   path_prefix: s3a://bucket/keys
   extra_configuration:
-    fs.s3a.awsAccessKeyId:  your_access_key
-    fs.s3a.awsSecretAccessKey: your_secret_access_key
+    fs.s3a.access.key: 'your_access_key'
+    fs.s3a.secret.key: 'your_secret_access_key'
+
 ```
 
 ## Build
