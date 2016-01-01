@@ -7,9 +7,6 @@ import com.github.jrubygradle.JRubyExec
 repositories {
     mavenCentral()
     jcenter()
-    maven {
-        url "http://maven.twttr.com/"
-    }
 }
 configurations {
     provided
@@ -22,10 +19,10 @@ dependencies {
     compile  "org.embulk:embulk-core:0.7.10"
     provided "org.embulk:embulk-core:0.7.10"
 
-    compile "com.twitter:parquet-hadoop:1.5.0"
-    compile "org.apache.hadoop:hadoop-client:2.6.0"
+    compile "org.apache.parquet:parquet-hadoop:1.8.1"
+    compile "org.apache.hadoop:hadoop-client:2.7.1"
+    compile "org.apache.hadoop:hadoop-aws:2.7.1"
     compile "org.xerial.snappy:snappy-java:1.1.1.6"
-    compile "org.apache.hadoop:hadoop-aws:2.6.0"
 
     testCompile "junit:junit:4.+"
     testCompile "org.embulk:embulk-core:0.7.7:tests"
