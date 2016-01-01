@@ -6,7 +6,6 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.embulk.config.Config;
 import org.embulk.config.ConfigDefault;
@@ -30,11 +29,9 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class ParquetOutputPlugin
-        implements OutputPlugin
-{
+        implements OutputPlugin {
     public interface PluginTask
-            extends Task, TimestampFormatter.Task
-    {
+            extends Task, TimestampFormatter.Task {
         @Config("path_prefix")
         String getPathPrefix();
 
@@ -47,11 +44,13 @@ public class ParquetOutputPlugin
         String getSequenceFormat();
 
         @Config("block_size")
-        @ConfigDefault("134217728") // 128M
+        @ConfigDefault("134217728")
+            // 128M
         int getBlockSize();
 
         @Config("page_size")
-        @ConfigDefault("1048576") // 1M
+        @ConfigDefault("1048576")
+            // 1M
         int getPageSize();
 
         @Config("compression_codec")
@@ -68,13 +67,12 @@ public class ParquetOutputPlugin
     }
 
     public interface TimestampColumnOption
-            extends Task, TimestampFormatter.TimestampColumnOption
-    { }
+            extends Task, TimestampFormatter.TimestampColumnOption {
+    }
 
     public ConfigDiff transaction(ConfigSource config,
-            Schema schema, int processorCount,
-            OutputPlugin.Control control)
-    {
+                                  Schema schema, int processorCount,
+                                  OutputPlugin.Control control) {
         PluginTask task = config.loadConfig(PluginTask.class);
 
         //TODO
@@ -84,65 +82,58 @@ public class ParquetOutputPlugin
     }
 
     public ConfigDiff resume(TaskSource taskSource,
-            Schema schema, int processorCount,
-            OutputPlugin.Control control)
-    {
+                             Schema schema, int processorCount,
+                             OutputPlugin.Control control) {
         throw new UnsupportedOperationException("parquet output plugin does not support resuming");
     }
 
     public void cleanup(TaskSource taskSource,
-            Schema schema, int processorCount,
-            List<TaskReport> successTaskReports)
-    {
+                        Schema schema, int processorCount,
+                        List<TaskReport> successTaskReports) {
         //TODO
     }
 
-    public TransactionalPageOutput open(TaskSource taskSource, final Schema schema, int processorIndex)
-    {
+    public TransactionalPageOutput open(TaskSource taskSource, final Schema schema, int processorIndex) {
         PluginTask task = taskSource.loadTask(PluginTask.class);
 
-        final String pathPrefix = task.getPathPrefix();
-        final String pathSuffix = task.getFileNameExtension();
-        final String sequenceFormat = task.getSequenceFormat();
-        final CompressionCodecName codec = CompressionCodecName.valueOf(task.getCompressionCodec());
-        final int blockSize = task.getBlockSize();
-        final int pageSize = task.getPageSize();
-
-        final String path = pathPrefix + String.format(sequenceFormat, processorIndex) + pathSuffix;
-
         final PageReader reader = new PageReader(schema);
-
-        final TimestampFormatter[] timestampFormatters = Timestamps.newTimestampColumnFormatters(task, schema, task.getColumnOptions());
-        final EmbulkWriteSupport writeSupport = new EmbulkWriteSupport(schema, timestampFormatters);
-        final Configuration conf = createConfiguration(task.getExtraConfigurations());
-
-        ParquetWriter<PageReader> writer = createParquetWriter(new Path(path), writeSupport, codec, blockSize, pageSize, conf);
+        final ParquetWriter<PageReader> writer = createWriter(task, schema, processorIndex);
 
         return new ParquetTransactionalPageOutput(reader, writer);
     }
 
-    private <T> ParquetWriter<T> createParquetWriter(Path path, WriteSupport<T> writeSupport, CompressionCodecName codec, int blockSize, int pageSize, Configuration conf) {
-        ParquetWriter<T> writer = null;
+    private String buildPath(PluginTask task, int processorIndex) {
+        final String pathPrefix = task.getPathPrefix();
+        final String pathSuffix = task.getFileNameExtension();
+        final String sequenceFormat = task.getSequenceFormat();
+        return pathPrefix + String.format(sequenceFormat, processorIndex) + pathSuffix;
+    }
 
+    private ParquetWriter<PageReader> createWriter(PluginTask task, Schema schema, int processorIndex) {
+        final TimestampFormatter[] timestampFormatters = Timestamps.newTimestampColumnFormatters(task, schema, task.getColumnOptions());
+
+        final Path path = new Path(buildPath(task, processorIndex));
+        final CompressionCodecName codec = CompressionCodecName.valueOf(task.getCompressionCodec());
+        final int blockSize = task.getBlockSize();
+        final int pageSize = task.getPageSize();
+        final Configuration conf = createConfiguration(task.getExtraConfigurations());
+
+        ParquetWriter<PageReader> writer = null;
         try {
-            writer = new ParquetWriter<>(
-                    path,
-                    writeSupport,
-                    codec,
-                    blockSize,
-                    pageSize,
-                    pageSize,
-                    ParquetWriter.DEFAULT_IS_DICTIONARY_ENABLED,
-                    ParquetWriter.DEFAULT_IS_VALIDATING_ENABLED,
-                    ParquetWriter.DEFAULT_WRITER_VERSION,
-                    conf);
+            writer = new EmbulkWriterBuilder(path, schema, timestampFormatters)
+                    .withCompressionCodec(codec)
+                    .withRowGroupSize(blockSize)
+                    .withPageSize(pageSize)
+                    .withDictionaryPageSize(pageSize)
+                    .withConf(conf)
+                    .build();
         } catch (IOException e) {
             Throwables.propagate(e);
         }
         return writer;
     }
 
-    private Configuration createConfiguration(Map<String,String> extra) {
+    private Configuration createConfiguration(Map<String, String> extra) {
         Configuration conf = new Configuration();
 
         // Default values
@@ -175,7 +166,7 @@ public class ParquetOutputPlugin
                 while (reader.nextRecord()) {
                     writer.write(reader);
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
                 Throwables.propagate(e);
             }
         }
