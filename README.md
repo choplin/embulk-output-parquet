@@ -27,11 +27,18 @@ http://www.embulk.org/docs/built-in.html#csv-formatter-plugin).
 ```yaml
 out:
   type: parquet
+  path_prefix: file:///data/output
+```
+
+### How to write parquet files into S3
+
+```yaml
+out:
+  type: parquet
   path_prefix: s3a://bucket/keys
-  extra_configuration:
+  extra_configurations:
     fs.s3a.access.key: 'your_access_key'
     fs.s3a.secret.key: 'your_secret_access_key'
-
 ```
 
 ## Build
