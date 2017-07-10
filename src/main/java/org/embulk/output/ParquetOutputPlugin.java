@@ -30,9 +30,11 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class ParquetOutputPlugin
-        implements OutputPlugin {
+        implements OutputPlugin
+{
     public interface PluginTask
-            extends Task, TimestampFormatter.Task {
+            extends Task, TimestampFormatter.Task
+    {
         @Config("path_prefix")
         String getPathPrefix();
 
@@ -72,12 +74,14 @@ public class ParquetOutputPlugin
     }
 
     public interface TimestampColumnOption
-            extends Task, TimestampFormatter.TimestampColumnOption {
+            extends Task, TimestampFormatter.TimestampColumnOption
+    {
     }
 
     public ConfigDiff transaction(ConfigSource config,
-                                  Schema schema, int processorCount,
-                                  OutputPlugin.Control control) {
+            Schema schema, int processorCount,
+            OutputPlugin.Control control)
+    {
         PluginTask task = config.loadConfig(PluginTask.class);
 
         //TODO
@@ -87,18 +91,21 @@ public class ParquetOutputPlugin
     }
 
     public ConfigDiff resume(TaskSource taskSource,
-                             Schema schema, int processorCount,
-                             OutputPlugin.Control control) {
+            Schema schema, int processorCount,
+            OutputPlugin.Control control)
+    {
         throw new UnsupportedOperationException("parquet output plugin does not support resuming");
     }
 
     public void cleanup(TaskSource taskSource,
-                        Schema schema, int processorCount,
-                        List<TaskReport> successTaskReports) {
+            Schema schema, int processorCount,
+            List<TaskReport> successTaskReports)
+    {
         //TODO
     }
 
-    public TransactionalPageOutput open(TaskSource taskSource, final Schema schema, int processorIndex) {
+    public TransactionalPageOutput open(TaskSource taskSource, final Schema schema, int processorIndex)
+    {
         PluginTask task = taskSource.loadTask(PluginTask.class);
 
         final PageReader reader = new PageReader(schema);
@@ -107,14 +114,16 @@ public class ParquetOutputPlugin
         return new ParquetTransactionalPageOutput(reader, writer);
     }
 
-    private String buildPath(PluginTask task, int processorIndex) {
+    private String buildPath(PluginTask task, int processorIndex)
+    {
         final String pathPrefix = task.getPathPrefix();
         final String pathSuffix = task.getFileNameExtension();
         final String sequenceFormat = task.getSequenceFormat();
         return pathPrefix + String.format(sequenceFormat, processorIndex) + pathSuffix;
     }
 
-    private ParquetWriter<PageReader> createWriter(PluginTask task, Schema schema, int processorIndex) {
+    private ParquetWriter<PageReader> createWriter(PluginTask task, Schema schema, int processorIndex)
+    {
         final TimestampFormatter[] timestampFormatters = Timestamps.newTimestampColumnFormatters(task, schema, task.getColumnOptions());
 
         final Path path = new Path(buildPath(task, processorIndex));
@@ -138,13 +147,15 @@ public class ParquetOutputPlugin
             }
 
             writer = builder.build();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             Throwables.propagate(e);
         }
         return writer;
     }
 
-    private Configuration createConfiguration(Map<String, String> extra) {
+    private Configuration createConfiguration(Map<String, String> extra)
+    {
         Configuration conf = new Configuration();
 
         // Default values
@@ -161,49 +172,59 @@ public class ParquetOutputPlugin
         return conf;
     }
 
-    class ParquetTransactionalPageOutput implements TransactionalPageOutput {
+    class ParquetTransactionalPageOutput
+            implements TransactionalPageOutput
+    {
         private PageReader reader;
         private ParquetWriter<PageReader> writer;
 
-        public ParquetTransactionalPageOutput(PageReader reader, ParquetWriter<PageReader> writer) {
+        public ParquetTransactionalPageOutput(PageReader reader, ParquetWriter<PageReader> writer)
+        {
             this.reader = reader;
             this.writer = writer;
         }
 
         @Override
-        public void add(Page page) {
+        public void add(Page page)
+        {
             try {
                 reader.setPage(page);
                 while (reader.nextRecord()) {
                     writer.write(reader);
                 }
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 Throwables.propagate(e);
             }
         }
 
         @Override
-        public void finish() {
+        public void finish()
+        {
             try {
                 writer.close();
                 writer = null;
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 Throwables.propagate(e);
             }
         }
 
         @Override
-        public void close() {
+        public void close()
+        {
             //TODO
         }
 
         @Override
-        public void abort() {
+        public void abort()
+        {
             //TODO
         }
 
         @Override
-        public TaskReport commit() {
+        public TaskReport commit()
+        {
             return Exec.newTaskReport();
             //TODO
         }
