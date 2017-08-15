@@ -28,11 +28,12 @@ public class EmbulkWriteSupport
     RecordConsumer consumer;
     WriteContext writeContext;
     TimestampFormatter[] timestampFormatters;
-
-    public EmbulkWriteSupport(Schema schema, TimestampFormatter[] timestampFormatters)
+    boolean addUTF8;
+    public EmbulkWriteSupport(Schema schema, TimestampFormatter[] timestampFormatters, boolean addUTF8)
     {
         this.schema = schema;
         this.timestampFormatters = timestampFormatters;
+        this.addUTF8 = addUTF8;
     }
 
     @Override
@@ -74,7 +75,12 @@ public class EmbulkWriteSupport
 
     private MessageType convertSchema(Schema schema)
     {
-        SchemaConvertColumnVisitor visitor = new SchemaConvertColumnVisitor();
+        SchemaConvertColumnVisitor visitor = null;
+        if(addUTF8) {
+            visitor = new SchemaConvertColumnVisitorWithUTF8();
+        } else {
+            visitor = new SchemaConvertColumnVisitor();
+        }
         schema.visitColumns(visitor);
         String messageName = "embulk";
         return new MessageType(messageName, visitor.getConvertedFields());
@@ -166,7 +172,7 @@ public class EmbulkWriteSupport
         @Override
         public void stringColumn(Column column)
         {
-            fields.add(new PrimitiveType(Type.Repetition.OPTIONAL, PrimitiveTypeName.BINARY, column.getName(), OriginalType.UTF8));
+            fields.add(new PrimitiveType(Type.Repetition.OPTIONAL, PrimitiveTypeName.BINARY, column.getName()));
         }
 
         @Override
@@ -186,4 +192,20 @@ public class EmbulkWriteSupport
             return fields;
         }
     }
+
+    class SchemaConvertColumnVisitorWithUTF8 extends SchemaConvertColumnVisitor {
+        @Override
+        public void stringColumn(Column column)
+        {
+            fields.add(new PrimitiveType(Type.Repetition.OPTIONAL, PrimitiveTypeName.BINARY, column.getName(), OriginalType.UTF8));
+        }
+
+        @Override
+        public void timestampColumn(Column column)
+        {
+            // formatted as string
+            fields.add(new PrimitiveType(Type.Repetition.OPTIONAL, PrimitiveTypeName.BINARY, column.getName(), OriginalType.UTF8));
+        }
+    }
+
 }
