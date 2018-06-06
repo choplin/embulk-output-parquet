@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -62,9 +64,9 @@ public class ParquetOutputPluginTest
         assertEquals("bar", extra.get("foo"));
 
         ParquetOutputPlugin plugin = new ParquetOutputPlugin();
-        Method method = ParquetOutputPlugin.class.getDeclaredMethod("createConfiguration", Map.class);
+        Method method = ParquetOutputPlugin.class.getDeclaredMethod("createConfiguration", Map.class, List.class);
         method.setAccessible(true);
-        Configuration conf = (Configuration) method.invoke(plugin, extra);
+        Configuration conf = (Configuration) method.invoke(plugin, extra, new ArrayList<String>());
         assertEquals("bar", conf.get("foo"));
     }
 }

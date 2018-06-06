@@ -8,13 +8,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
-import org.embulk.config.ConfigDiff;
-import org.embulk.config.ConfigSource;
-import org.embulk.config.Task;
-import org.embulk.config.TaskReport;
-import org.embulk.config.TaskSource;
+import org.embulk.config.*;
 import org.embulk.spi.Exec;
 import org.embulk.spi.OutputPlugin;
 import org.embulk.spi.Page;
@@ -24,7 +18,9 @@ import org.embulk.spi.TransactionalPageOutput;
 import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.util.Timestamps;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Map;
 
@@ -63,6 +59,10 @@ public class ParquetOutputPlugin
         @Config("column_options")
         @ConfigDefault("{}")
         Map<String, TimestampColumnOption> getColumnOptions();
+
+        @Config("config_files")
+        @ConfigDefault("[]")
+        List<String> getConfigFiles();
 
         @Config("extra_configurations")
         @ConfigDefault("{}")
@@ -130,7 +130,7 @@ public class ParquetOutputPlugin
         final CompressionCodecName codec = CompressionCodecName.valueOf(task.getCompressionCodec());
         final int blockSize = task.getBlockSize();
         final int pageSize = task.getPageSize();
-        final Configuration conf = createConfiguration(task.getExtraConfigurations());
+        final Configuration conf = createConfiguration(task.getExtraConfigurations(), task.getConfigFiles());
         final boolean overwrite = task.getOverwrite();
 
         ParquetWriter<PageReader> writer = null;
@@ -154,13 +154,23 @@ public class ParquetOutputPlugin
         return writer;
     }
 
-    private Configuration createConfiguration(Map<String, String> extra)
+    private Configuration createConfiguration(Map<String, String> extra, List<String> configFiles)
     {
         Configuration conf = new Configuration();
 
         // Default values
         conf.set("fs.hdfs.impl", DistributedFileSystem.class.getName());
         conf.set("fs.file.impl", LocalFileSystem.class.getName());
+
+        for (String configFile : configFiles) {
+            File file = new File(configFile);
+            try {
+                conf.addResource(file.toURI().toURL());
+            }
+            catch (MalformedURLException e) {
+                throw new ConfigException(e);
+            }
+        }
 
         // Optional values
         for (Map.Entry<String, String> entry : extra.entrySet()) {
