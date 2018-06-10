@@ -18,6 +18,7 @@ import org.embulk.spi.Schema;
 import org.embulk.spi.TransactionalPageOutput;
 import org.embulk.spi.time.TimestampFormatter;
 import org.embulk.spi.util.Timestamps;
+import org.embulk.output.parquet.ClassLoaderSwap;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,7 +96,9 @@ public class ParquetOutputPlugin
 
         //TODO
 
-        control.run(task.dump());
+        try (ClassLoaderSwap clswp = new ClassLoaderSwap(this.getClass())) {
+            control.run(task.dump());
+        }
         return Exec.newConfigDiff();
     }
 
