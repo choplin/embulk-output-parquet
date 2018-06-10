@@ -29,6 +29,7 @@ public class EmbulkWriteSupport
     WriteContext writeContext;
     TimestampFormatter[] timestampFormatters;
     boolean addUTF8;
+
     public EmbulkWriteSupport(Schema schema, TimestampFormatter[] timestampFormatters, boolean addUTF8)
     {
         this.schema = schema;
@@ -76,7 +77,7 @@ public class EmbulkWriteSupport
     private MessageType convertSchema(Schema schema)
     {
         SchemaConvertColumnVisitor visitor = null;
-        if(addUTF8) {
+        if (addUTF8) {
             visitor = new SchemaConvertColumnVisitorWithUTF8();
         } else {
             visitor = new SchemaConvertColumnVisitor();
@@ -131,7 +132,8 @@ public class EmbulkWriteSupport
         }
 
         @Override
-        public void jsonColumn(Column column) {
+        public void jsonColumn(Column column)
+        {
             throw new UnsupportedOperationException("This plugin doesn't support json type. Please try to upgrade version of the plugin using 'embulk gem update' command. If the latest version still doesn't support json type, please contact plugin developers, or change configuration of input plugin not to use json type.");
         }
 
@@ -176,7 +178,8 @@ public class EmbulkWriteSupport
         }
 
         @Override
-        public void jsonColumn(Column column) {
+        public void jsonColumn(Column column)
+        {
             throw new UnsupportedOperationException("This plugin doesn't support json type. Please try to upgrade version of the plugin using 'embulk gem update' command. If the latest version still doesn't support json type, please contact plugin developers, or change configuration of input plugin not to use json type.");
         }
 
@@ -193,7 +196,8 @@ public class EmbulkWriteSupport
         }
     }
 
-    class SchemaConvertColumnVisitorWithUTF8 extends SchemaConvertColumnVisitor {
+    class SchemaConvertColumnVisitorWithUTF8 extends SchemaConvertColumnVisitor
+    {
         @Override
         public void stringColumn(Column column)
         {

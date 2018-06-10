@@ -77,7 +77,7 @@ public class ParquetOutputPlugin
         @Config("enablesigv4")
         @ConfigDefault("false")
         String getSignature();
-        
+
         @Config("addUTF8")
         @ConfigDefault("false")
         boolean getAddUTF8();
@@ -89,8 +89,8 @@ public class ParquetOutputPlugin
     }
 
     public ConfigDiff transaction(ConfigSource config,
-            Schema schema, int processorCount,
-            OutputPlugin.Control control)
+                                  Schema schema, int processorCount,
+                                  OutputPlugin.Control control)
     {
         PluginTask task = config.loadConfig(PluginTask.class);
 
@@ -104,15 +104,15 @@ public class ParquetOutputPlugin
     }
 
     public ConfigDiff resume(TaskSource taskSource,
-            Schema schema, int processorCount,
-            OutputPlugin.Control control)
+                             Schema schema, int processorCount,
+                             OutputPlugin.Control control)
     {
         throw new UnsupportedOperationException("parquet output plugin does not support resuming");
     }
 
     public void cleanup(TaskSource taskSource,
-            Schema schema, int processorCount,
-            List<TaskReport> successTaskReports)
+                        Schema schema, int processorCount,
+                        List<TaskReport> successTaskReports)
     {
         //TODO
     }
@@ -164,8 +164,7 @@ public class ParquetOutputPlugin
             }
 
             writer = builder.build();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Throwables.propagate(e);
         }
         return writer;
@@ -183,8 +182,7 @@ public class ParquetOutputPlugin
             File file = new File(configFile);
             try {
                 conf.addResource(file.toURI().toURL());
-            }
-            catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 throw new ConfigException(e);
             }
         }
@@ -219,8 +217,7 @@ public class ParquetOutputPlugin
                 while (reader.nextRecord()) {
                     writer.write(reader);
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 Throwables.propagate(e);
             }
         }
@@ -231,8 +228,7 @@ public class ParquetOutputPlugin
             try {
                 writer.close();
                 writer = null;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 Throwables.propagate(e);
             }
         }

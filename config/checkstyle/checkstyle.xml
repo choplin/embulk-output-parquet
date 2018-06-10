@@ -66,9 +66,9 @@
                  LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR,
                  LITERAL_IF, LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE"/>
         </module>
-        <module name="RightCurly">
-            <property name="option" value="alone"/>
-        </module>
+        <!--<module name="RightCurly">-->
+            <!--<property name="option" value="alone"/>-->
+        <!--</module>-->
         <module name="GenericWhitespace"/>
         <module name="WhitespaceAfter"/>
         <module name="NoWhitespaceBefore"/>
