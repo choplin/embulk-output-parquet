@@ -1,5 +1,6 @@
 package org.embulk.output;
 
+import com.amazonaws.SDKGlobalConfiguration;
 import com.google.common.base.Throwables;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -72,6 +73,10 @@ public class ParquetOutputPlugin
         @ConfigDefault("false")
         boolean getOverwrite();
 
+        @Config("enablesigv4")
+        @ConfigDefault("false")
+        String getSignature();
+        
         @Config("addUTF8")
         @ConfigDefault("false")
         boolean getAddUTF8();
@@ -128,6 +133,9 @@ public class ParquetOutputPlugin
 
     private ParquetWriter<PageReader> createWriter(PluginTask task, Schema schema, int processorIndex)
     {
+        //In case of using Frankurt (eu-central-1) with Signature Version 4 Signing Process
+        System.setProperty(SDKGlobalConfiguration.ENABLE_S3_SIGV4_SYSTEM_PROPERTY, task.getSignature());
+
         final TimestampFormatter[] timestampFormatters = Timestamps.newTimestampColumnFormatters(task, schema, task.getColumnOptions());
         final boolean addUTF8 = task.getAddUTF8();
 
