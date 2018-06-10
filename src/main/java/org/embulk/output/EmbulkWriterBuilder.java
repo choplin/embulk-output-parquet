@@ -13,12 +13,14 @@ public class EmbulkWriterBuilder
 {
     final Schema schema;
     final TimestampFormatter[] timestampFormatters;
+    final boolean addUTF8;
 
-    public EmbulkWriterBuilder(Path file, Schema schema, TimestampFormatter[] timestampFormatters)
+    public EmbulkWriterBuilder(Path file, Schema schema, TimestampFormatter[] timestampFormatters, boolean addUTF8)
     {
         super(file);
         this.schema = schema;
         this.timestampFormatters = timestampFormatters;
+        this.addUTF8 = addUTF8;
     }
 
     @Override
@@ -30,6 +32,6 @@ public class EmbulkWriterBuilder
     @Override
     protected WriteSupport<PageReader> getWriteSupport(Configuration conf)
     {
-        return new EmbulkWriteSupport(schema, timestampFormatters);
+        return new EmbulkWriteSupport(schema, timestampFormatters, addUTF8);
     }
 }

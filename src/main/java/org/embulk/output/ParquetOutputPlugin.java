@@ -76,6 +76,10 @@ public class ParquetOutputPlugin
         @Config("enablesigv4")
         @ConfigDefault("false")
         String getSignature();
+        
+        @Config("addUTF8")
+        @ConfigDefault("false")
+        boolean getAddUTF8();
     }
 
     public interface TimestampColumnOption
@@ -133,6 +137,7 @@ public class ParquetOutputPlugin
         System.setProperty(SDKGlobalConfiguration.ENABLE_S3_SIGV4_SYSTEM_PROPERTY, task.getSignature());
 
         final TimestampFormatter[] timestampFormatters = Timestamps.newTimestampColumnFormatters(task, schema, task.getColumnOptions());
+        final boolean addUTF8 = task.getAddUTF8();
 
         final Path path = new Path(buildPath(task, processorIndex));
         final CompressionCodecName codec = CompressionCodecName.valueOf(task.getCompressionCodec());
@@ -143,7 +148,7 @@ public class ParquetOutputPlugin
 
         ParquetWriter<PageReader> writer = null;
         try {
-            EmbulkWriterBuilder builder = new EmbulkWriterBuilder(path, schema, timestampFormatters)
+            EmbulkWriterBuilder builder = new EmbulkWriterBuilder(path, schema, timestampFormatters, addUTF8)
                     .withCompressionCodec(codec)
                     .withRowGroupSize(blockSize)
                     .withPageSize(pageSize)
