@@ -21,6 +21,7 @@
 http://www.embulk.org/docs/built-in.html#csv-formatter-plugin).
 - **extra_configurations**: Add extra entries to Configuration which will be passed to ParquetWriter
 - **overwrite**: Overwrite if output files already exist. (default: fail if files exist)
+- **addUTF8**: If true, string and timestamp columns are stored with OriginalType.UTF8 (boolean, default false) 
 
 ## Example
 
