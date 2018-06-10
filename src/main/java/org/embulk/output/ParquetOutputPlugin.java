@@ -96,7 +96,8 @@ public class ParquetOutputPlugin
 
         //TODO
 
-        try (ClassLoaderSwap clswp = new ClassLoaderSwap(this.getClass())) {
+
+        try (@SuppressWarnings("unchecked") ClassLoaderSwap clswp = new ClassLoaderSwap(this.getClass())) {
             control.run(task.dump());
         }
         return Exec.newConfigDiff();
